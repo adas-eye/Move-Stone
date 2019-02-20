@@ -129,6 +129,8 @@ def build_network(images,is_training):
     net=bottleneck(net,32*4,32,3,1,scope='block4',is_training=is_training)#BX8X8X128
     net=bottleneck(net,16*4,16,3,2,scope='block5',is_training=is_training)#BX4X4X64
     net=bottleneck(net,16*4,16,3,2,scope='block6',is_training=is_training)#BX4X4X64
+    net=layers.batch_normalization(net, training=is_training)
+    net= leaky_relu(config.alpha)(net)
     net=layers.flatten(net,name='flat')
     net=layers.dense(net,256,activation=leaky_relu(config.alpha),name='fc1')#BX256
     net=layers.dense(net,config.num_class,activation=None,name='logits')#BXconfig.num_class
