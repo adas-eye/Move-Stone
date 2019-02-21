@@ -143,7 +143,7 @@ def compute_loss(images,labels,phase):
     
     logits=build_network(images,phase)
     with tf.variable_scope('loss'):
-        class_loss=tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,labels=labels,name='class_loss')
+        class_loss=tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,labels=labels,name='class_loss'))
         train_var_list=[v for v in tf.trainable_variables()
                     if 'beta' not in v.name and 'gamma' not in v.name]
         l2_loss=config.weight_decay*tf.add_n(
