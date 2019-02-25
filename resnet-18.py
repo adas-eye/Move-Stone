@@ -10,6 +10,27 @@ def leaky_relu(alpha):
     return op
 
 
+def maxout(inputs,num_units, axis=-1, scope=None):
+    with tf.variable_scope(scope, 'MaxOut', [inputs]):
+    
+        shape = inputs.get_shape().as_list()
+        num_channels = shape[axis]
+        if num_channels % num_units:
+            raise ValueError('number of features({}) is not '
+                            'a multiple of num_units({})'.format(
+                                num_channels, num_units))
+        shape[axis] = num_units
+        shape += [num_channels // num_units]
+
+        # Dealing with batches with arbitrary sizes
+        for i in range(len(shape)):
+            if shape[i] is None:
+                shape[i] = tf.shape(inputs)[i]
+        
+        outputs = tf.reduce_max(
+           tf.reshape(inputs, shape), -1, keepdims=False)
+    return outputs
+
 def conv_block(inputs,filters,kernel_size,strides,name,padding='valid',
                activation=leaky_relu(config.alpha),
                kernel_initializer=tf.contrib.layers.xavier_initializer()):
