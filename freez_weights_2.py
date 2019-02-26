@@ -1,3 +1,6 @@
+'''
+将tensorflow的ckpt模型文件转换成.pb文件并压缩
+'''
 import numpy as np
 import os
 import tensorflow as tf
@@ -51,3 +54,24 @@ if __name__ == '__main__':
   # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
  
   freeze_model()
+
+ 
+def read():
+  '''
+  读取.pb文件
+  '''
+   with tf.Graph().as_default():
+           output_graph_def = tf.GraphDef()
+           output_graph_path = "D:/code/test/handTest/r4/model/output_model/pb_model/frozen_model.pb"
+
+       with open(output_graph_path, 'rb') as f:
+           output_graph_def.ParseFromString(f.read())
+           _ = tf.import_graph_def(output_graph_def, name="")
+
+       with tf.Session() as sess:
+           sess.run(tf.global_variables_initializer())
+           graph=sess.graph
+           images= sess.graph.get_tensor_by_name("input:0")
+
+           phase = sess.graph.get_tensor_by_name("phase:0")
+           logits = sess.graph.get_tensor_by_name("output:0")
