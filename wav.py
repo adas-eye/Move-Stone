@@ -2,11 +2,17 @@ import os
 import subprocess
 from pydub import AudioSegment
 import argparse
-import sys
+import
+sys
 '''
 截取一段视频
 ffmpeg -ss 00:00:04.473 -t 00:00:01 -i demo.mp4  -c:v libx264 -c:a aac -strict experimental -b:a 98k audio.mp4
+无损截音频
+ffmpeg -i ./out/teddy.mp4  -vn -acodec copy  ./audio/teddy.m4a
+无损截视频
+ffmpeg  -i ./plutopr.mp4 -vcodec copy -acodec copy -ss 00:00:10 -to 00:00:15 ./cutout1.mp4 -y
 '''
+
 
 def main(args):
     video=args.video
