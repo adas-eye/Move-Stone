@@ -7,3 +7,5 @@ find . -type f ! -name "*.html"
 # skip the file scp
 rsync -avzu --progress -e "ssh -p22" root@xx.xx.xx:/xx/xx/xx ./
 
+# find the files more than 100M
+find ./ -type f -size +100M
