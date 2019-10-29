@@ -367,7 +367,7 @@ def arcface_loss(embedding, labels, out_num, w_init=None, s=64., m=0.5):
         #     else:
         #         y[i] = math.cos(x[i]) - m*math.sin(m)
         # plt.plot(x,y)
-        plt.show()
+        # plt.show()
         cos_mt_temp = tf.where(cond, cos_mt, keep_val)
 
         mask = tf.one_hot(labels, depth=out_num, name='one_hot_mask')
@@ -379,3 +379,8 @@ def arcface_loss(embedding, labels, out_num, w_init=None, s=64., m=0.5):
         output = tf.add(tf.multiply(s_cos_t, inv_mask), tf.multiply(cos_mt_temp, mask), name='arcface_loss_output')
     return output
 
+#-------------------------something about tensorboard-----------------------------------------------------------------------------------------------------------------
+scope = ''
+vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
+for var in vars:
+    tf.summary.histogram(var.op.name,var)
