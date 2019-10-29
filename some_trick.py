@@ -353,21 +353,23 @@ def arcface_loss(embedding, labels, out_num, w_init=None, s=64., m=0.5):
         cond = tf.cast(tf.nn.relu(cond_v, name='if_else'), dtype=tf.bool)
 
         keep_val = s*(cos_t - mm)
-        # make sure the loss is monotonically decreasing and you can plot by yourself as follows
-        # import numpy as np
-        # import matplotlib.pyplot as plt
-        # import math
-        # x = np.arange(0,math.pi,0.001)
-        # m = 0.25
+        '''
+        make sure the loss is monotonically decreasing and you can plot by yourself as follows
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import math
+        x = np.arange(0,math.pi,0.001)
+        m = 0.25
 
-        # y = np.zeros_like(x)
-        # for i in range(len(x)):
-        #     if x[i] + m < math.pi:
-        #         y[i] = math.cos(x[i]+m)
-        #     else:
-        #         y[i] = math.cos(x[i]) - m*math.sin(m)
-        # plt.plot(x,y)
-        # plt.show()
+        y = np.zeros_like(x)
+        for i in range(len(x)):
+            if x[i] + m < math.pi:
+                y[i] = math.cos(x[i]+m)
+            else:
+                y[i] = math.cos(x[i]) - m*math.sin(m)
+        plt.plot(x,y)
+        plt.show()
+        '''
         cos_mt_temp = tf.where(cond, cos_mt, keep_val)
 
         mask = tf.one_hot(labels, depth=out_num, name='one_hot_mask')
