@@ -386,3 +386,52 @@ scope = ''
 vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
 for var in vars:
     tf.summary.histogram(var.op.name,var)
+
+
+# ------------------------grad-cam---------------------------------------------------
+def grad_cam(x, vgg, sess, predicted_class, layer_name, nb_classes):
+    '''
+    args:
+        x: the input
+        vgg:the net
+        layer_name:the layer before fc
+        nb_classes:the nums of classes
+    '''
+    print("Setting gradients to 1 for target class and rest to 0")
+    # Conv layer tensor [?,w,h,c]
+    conv_layer = vgg.layers[layer_name]
+    # [1000]-D tensor with target class index set to 1 and rest as 0
+    one_hot = tf.sparse_to_dense(predicted_class, [nb_classes], 1.0)
+    signal = tf.multiply(vgg.layers['fc3'], one_hot)
+    loss = tf.reduce_mean(signal)
+
+    grads = tf.gradients(loss, conv_layer)[0]
+    # Normalizing the gradients
+    norm_grads = tf.div(grads, tf.sqrt(tf.reduce_mean(tf.square(grads))) + tf.constant(1e-5))
+
+    output, grads_val = sess.run([conv_layer, norm_grads], feed_dict={vgg.imgs: x})
+    output = output[0]           # [w,h,c]
+    grads_val = grads_val[0]	 # [w,h,c]
+
+    '''
+    every channel pays attention on the class
+    so compute the weight with axis=(0,1) to take the class more clear
+    '''
+    weights = np.mean(grads_val, axis = (0, 1)) 			# [c]
+    # weights = np.mean(grads_val, axis = (-1))
+    cam = np.ones(output.shape[0 : 2], dtype = np.float32)	# [w,h]
+
+    # Taking a weighted average
+    for i, w in enumerate(weights):
+        cam += w * output[:, :, i]
+
+    # Passing through ReLU
+    cam = np.maximum(cam, 0)
+    cam = cam / np.max(cam)
+    cam = resize(cam, (224,224))
+
+    # Converting grayscale to 3-D
+    cam3 = np.expand_dims(cam, axis=2)
+    cam3 = np.tile(cam3,[1,1,3])
+
+    return cam3
