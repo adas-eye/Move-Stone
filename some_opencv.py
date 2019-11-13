@@ -32,4 +32,4 @@ def compute_centroid(img_path):
         
 
         mc.append([a,b])
-    return mc = np.array(mc) # the centroid
+    return np.array(mc) # the centroid
