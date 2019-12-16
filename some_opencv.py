@@ -33,3 +33,74 @@ def compute_centroid(img_path):
 
         mc.append([a,b])
     return np.array(mc) # the centroid
+
+#---------------------------seamless----------------------------
+import scipy.sparse
+from scipy.sparse.linalg import spsolve
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+def laplacian_matrix(n, m):
+    mat_D = scipy.sparse.lil_matrix((m, m))
+    mat_D.setdiag(-1, -1)
+    mat_D.setdiag(4)
+    mat_D.setdiag(-1, 1)        
+    mat_A = scipy.sparse.block_diag([mat_D] * n).tolil()    
+    mat_A.setdiag(-1, 1*m)
+    mat_A.setdiag(-1, -1*m)    
+    return mat_A
+def seamless_clone(source, target, mask):
+    '''
+    Args:
+        source: [h,w,3] value-->[0,1]
+        target: [h,w,3] value-->[0,1]
+        mask:   [h,w]   value-->[0,1]
+        the mask area will erode before to get a better result 
+        put source to target
+    Return:
+        [h,w,3] value-->[0,1]
+    '''
+    h, w,c = target.shape
+    result = []
+    
+    mat_A = laplacian_matrix(h, w)
+    laplacian = mat_A.tocsc()
+
+    mask[0,:] = 1
+    mask[-1,:] = 1
+    mask[:,0] = 1
+    mask[:,-1] = 1
+    q = np.argwhere(mask==0)
+    
+    k = q[:,1]+q[:,0]*w
+    mat_A[k, k] = 1
+    mat_A[k, k + 1] = 0
+    mat_A[k, k - 1] = 0
+    mat_A[k, k + w] = 0
+    mat_A[k, k - w] = 0
+
+    mat_A = mat_A.tocsc()    
+    mask_flat = mask.flatten()
+    for channel in range(c):
+        
+        source_flat = source[:, :, channel].flatten()
+        target_flat = target[:, :, channel].flatten()        
+
+        mat_b = laplacian.dot(source_flat)*0.75
+        mat_b[mask_flat==0] = target_flat[mask_flat==0]
+        
+        x = spsolve(mat_A, mat_b).reshape((h, w))
+        result.append (x)
+
+        
+    return np.clip( np.dstack(result), 0, 1 )
+#for example
+source = cv2.imread('D:/code/STUDY/poisson-image-editing/temp/frame_img/66.png')[...,[2,1,0]]/255.0
+target = cv2.imread('D:/code/STUDY/poisson-image-editing/temp/gen_img/66.png')[...,[2,1,0]]/255.0
+mask = cv2.imread('D:/code/STUDY/poisson-image-editing/temp/mask_img/66.png',0)/255.0
+kernel2 = cv2.getStructuringElement(cv2.MORPH_RECT,(5, 5))
+    
+mask = cv2.erode(mask,kernel2)
+r = seamless_clone(target,source,mask)
+plt.imshow(r)
+plt.show()
