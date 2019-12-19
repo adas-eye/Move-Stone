@@ -11,7 +11,11 @@ ffmpeg -ss 00:00:04.473 -t 00:00:01 -i demo.mp4  -c:v libx264 -c:a aac -strict e
 ffmpeg -i ./out/teddy.mp4  -vn -acodec copy  ./audio/teddy.m4a
 无损截视频
 ffmpeg  -i ./plutopr.mp4 -vcodec copy -acodec copy -ss 00:00:10 -to 00:00:15 ./cutout1.mp4 -y
+
+视频解帧
+'ffmpeg -i {0} -q:v 2 -f image2 {1}/%03d.png'.format(video_path,outfile)
 '''
+
 
 
 def main(args):
