@@ -1,5 +1,9 @@
 import cv2
 import numpy as np
+
+# read path contain chinese
+path = ""
+img=cv2.imdecode(np.fromfile(path,dtype=np.uint8),-1)[...,::3]
 # ----------------------------compute the centroid from a mask image-------------------------
 def compute_centroid(img_path):
     nThresh = 100
