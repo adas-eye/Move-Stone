@@ -1,9 +1,45 @@
 import cv2
 import numpy as np
 
+# some PS blending
+
+# 正片叠底
+def Multiply (img_1, img_2):
+    '''
+    img_1,img_2 -> [0,1]
+    '''
+    img = img_1 * img_2
+    return img
+
+# 滤色
+def Screen(img_1, img_2):
+    '''
+    img_1,img_2 -> [0,1]
+    '''
+    img = 1- (1-img_1)*(1-img_2)
+
+    return img
+
+# 柔光
+def Soft_light(img_1, img_2):
+    '''
+    img_1,img_2 -> [0,1]
+    '''
+    mask = img_1 < 0.5
+    T1 = (2 * img_1 -1)*(img_2 - img_2 * img_2) + img_2
+    T2 = (2 * img_1 -1)*(np.sqrt(img_2) - img_2) + img_2
+    img = T1 * mask + T2 * (1-mask)
+
+    return img
+
+
+
+
+
+
 # read path contain chinese
 path = ""
-img=cv2.imdecode(np.fromfile(path,dtype=np.uint8),-1)[...,::3]
+img=cv2.imdecode(np.fromfile(path,dtype=np.uint8),-1)[...,:3]
 # ----------------------------compute the centroid from a mask image-------------------------
 def compute_centroid(img_path):
     nThresh = 100
